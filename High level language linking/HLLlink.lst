@@ -1,0 +1,138 @@
+Microsoft (R) Macro Assembler Version 14.36.32537.0	    04/12/24 17:09:01
+callee.asm						     Page 1 - 1
+
+
+				;TITLE quadratic Procedure, version 1 (callee.asm)
+
+				;This procedure will be called by a high level procedure.
+				;it will use real numbers, utilizing the floating point unit
+				;and will be using the eax register. This procedure uses the integers
+				;from the HLL procedure, evaluates them using the quadratic formula,
+				;and places their roots in memory. If the roots are valid, eax will return
+				;0 and if they are complex/invalid, it returns -1.
+				;formula: [-(b)+/-sqrt(b^2-4ac)]/2a
+				 
+				; Lewis Green
+				; CPEN 3710
+				; 4/12/24
+
+				.386
+				.model FLAT, C 
+
+				public quadratic		;quadratic is able to be found by external code
+
+ 00000000			.data
+ 00000000 C0800000		Constant4 REAL4 -4.0F
+ 00000004 40000000		Constant2 REAL4 2.0F
+
+ 00000000			.code
+ 00000000			quadratic proc
+
+ 00000000  55			push ebp				;Saving (pushing) ebp on the stack
+ 00000001  8B EC		mov ebp, esp			;creating stack frame (saving ebp location)
+ 00000003  9B DB E3		finit					;creates FPU and sets flags
+ 00000006  D9 45 0C		fld REAL4 ptr [ebp+12]	;loading a into st0
+ 00000009  D9 45 10		fld REAL4 ptr [ebp+16]	;loading c into st0, moving a to st1,
+
+				;(-2ac)
+ 0000000C  DE C9		fmul			;multiplying a and c (st0 and st1)
+ 0000000E  D9 05 00000000 R	fld Constant4	;loading -4 into st0, moving ac to st1
+ 00000014  DE C9		fmul			;multiplying -4 by ac
+								;st0 contains -4ac
+								
+				;(b^2-2ac)
+ 00000016  D9 45 08		fld REAL4 ptr [ebp+8]	;loading b into st0, moving -4ac to st1
+ 00000019  D9 45 08		fld REAL4 ptr [ebp+8]	;loading b into st0, b to st1, -4ac to st2
+ 0000001C  DE C9		fmul					;b^2
+ 0000001E  DE C1		fadd					;adding b^2 to -4ac, now (b^2)-4ac in st0
+
+				;checking if a negative is under radical
+ 00000020  D9 EE		fldz		;loading 0 into st0
+ 00000022  D8 D9		fcomp		;comparing st0 to st1 and popping, st1 value will be in st0 again
+ 00000024  DF E0		fnstsw ax	;fpu status is stored in AX
+ 00000026  9E			sahf		;setting the flags from AH
+ 00000027  77 2D		ja complexRoot	;if below or equal to 0, complex or invalid
+
+				;finding the square root if not complex
+ 00000029  D9 FA		fsqrt	;gets the square root of st0
+
+				;adding and subtracting square root
+ 0000002B  D9 45 08		fld REAL4 ptr [ebp+8]	;loading b into st0, sqrt((b^2)-4ac) in st1 and st2
+ 0000002E  D9 E0		fchs					;flipping b's sign so -b
+ 00000030  D8 E1		fsub st(0), st(1)		;subtracts st0 from st1, result in st0, st1 now sqrt((b^2)-4ac)
+ 00000032  D9 45 08		fld REAL4 ptr [ebp+8]	;loading b into st0, shifting stack
+ 00000035  D9 E0		fchs
+ 00000037  DE C2		faddp st(2), st(0)		;adds b to sqrt((b^2)-4ac), popping st0.
+										;now results are in st0 and st1
+										;subtraction in st0, addition in st1
+
+				;finally dividing by 2a
+ 00000039  D9 05 00000004 R	fld Constant2
+ 0000003F  D9 45 0C		fld REAL4 ptr [ebp+12]
+ 00000042  DE C9		fmul
+ 00000044  D9 C0		fld st(0)				;st0&1 are 2a, st2&3 are sub&add
+ 00000046  DE FA		fdivp st(2),st(0)		;divides st2 by st0, popping st0
+										;now st0 is 2a, st1 [-(b)-sqrt(b^2-4ac)]/2a, st2 -(b)+sqrt(b^2-4ac)
+ 00000048  DE FA		fdivp st(2), st(0)		;divides st2 by st0, making st2 -(b)+sqrt(b^2-4ac)/2a
+										;st0 contains [-(b)-sqrt(b^2-4ac)]/2a, st1 contains [-(b)+sqrt(b^2-4ac)]/2a
+
+				;moving answer1&2 into edi, moving results into answer1&2
+ 0000004A  8B 7D 14		mov edi, [ebp+20]
+ 0000004D  D9 1F		fstp REAL4 ptr [edi]
+ 0000004F  8B 7D 18		mov edi, [ebp+24]
+ 00000052  D9 1F		fstp REAL4 ptr [edi]
+ 00000054  EB 07		jmp validRoot
+
+ 00000056			complexRoot:
+ 00000056  B8 FFFFFFFF		mov eax, -1		;if invalid root/complex 
+ 0000005B  5D			pop ebp
+ 0000005C  C3			ret
+
+ 0000005D			validRoot:
+ 0000005D  B8 00000000		mov eax, 0		;if roots are valid
+ 00000062  5D			pop ebp			;restoring ebp
+ 00000063  C3			ret				;returning back to HLL procedure
+ 00000064			quadratic endp
+				END
+Microsoft (R) Macro Assembler Version 14.36.32537.0	    04/12/24 17:09:01
+callee.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000008 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000064 DWord	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+quadratic  . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000064 Public C
+  complexRoot  . . . . . . . . .	L Near	 00000056 _TEXT	
+  validRoot  . . . . . . . . . .	L Near	 0000005D _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000001h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+Constant2  . . . . . . . . . . .	DWord	 00000004 _DATA	
+Constant4  . . . . . . . . . . .	DWord	 00000000 _DATA	
+
+	   0 Warnings
+	   0 Errors
