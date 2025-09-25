@@ -1,0 +1,30 @@
+Microsoft (R) Macro Assembler Version 6.15.8803		    02/01/24 13:06:52
+Add and Subtract (AddSub.asm)				     Page 1 - 1
+
+
+				TITLE Add and Subtract (AddSub.asm)
+				; This program adds and subtracts 32-bit integers.
+				; Name: Lewis Green
+				; CPEN 3710-0
+				; Date: 02/01/24
+
+				INCLUDE Irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+ 00000000			.code
+ 00000000			main PROC
+ 00000000  B8 00010000		mov eax,10000h ; eax = 10000h
+ 00000005  05 00060000		add eax,60000h ; eax = 70000h
+ 0000000A  2D 00040000		sub eax,40000h ; eax = 30000h
+ 0000000F  E8 00000000 E	call DumpRegs ; display registers
+				exit
+ 0000001B			main ENDP
+				END main

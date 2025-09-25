@@ -1,0 +1,35 @@
+Microsoft (R) Macro Assembler Version 6.11		    02/01/24 14:22:53
+Add Three, Version 1 (Addthree.asm)			     Page 1 - 1
+
+
+				TITLE Add Three, Version 1 (Addthree.asm)
+				; This program adds 16-bit integers
+				; and stores the result in a variable. Processing
+				; is done in real-address mode.
+				; Name: Lewis Green
+				; CPEN 3710-0
+				; Date: 02/01/24
+
+				INCLUDE Irvine16.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+ 0000				.data
+ 0000 13E7			val1 WORD 13E7h
+ 0002 BCDE			val2 WORD 0BCDEh
+ 0004 094B			val3 WORD 094Bh
+ 0006 0000			finalVal WORD ?
+
+ 0000				.code
+ 0000				main PROC
+ 0000  B8 ---- R		mov ax,@data ; get location of program=s variables
+ 0003  8E D8			mov ds,ax ; and initialize data segment register
+ 0005  A1 0000 R		mov ax,val1 ; eax = 13E7h
+ 0008  03 06 0002 R		add ax,val2 ; eax = 13E7h + BCDEh = D0C5h
+ 000C  03 06 0004 R		add ax,val3 ; eax = D0C5h + 094Bh = DA10h
+ 0010  A3 0006 R		mov finalVal,ax ; store the result = DA10h
+ 0013  E8 0000 E		call DumpRegs ; display registers
+				exit
+ 001A				main ENDP
+				END main

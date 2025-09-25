@@ -1,0 +1,35 @@
+Microsoft (R) Macro Assembler Version 6.11		    02/01/24 13:21:29
+Add and Subtract, Version 2 (AddSub2.asm)		     Page 1 - 1
+
+
+				TITLE Add and Subtract, Version 2 (AddSub2.asm)
+				; This program adds and subtracts 32-bit integers
+				; and stores the result in a variable. Processing
+				; is done in real-address mode.
+				; Name: Lewis Green
+				; CPEN 3710-0
+				; Date: 02/01/24
+
+				INCLUDE Irvine16.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+ 0000				.data
+ 0000 00010000			val1 DWORD 10000h
+ 0004 00060000			val2 DWORD 60000h
+ 0008 00040000			val3 DWORD 40000h
+ 000C 00000000			finalVal DWORD ?
+
+ 0000				.code
+ 0000				main PROC
+ 0000  B8 ---- R		mov ax,@data ; get location of program=s variables
+ 0003  8E D8			mov ds,ax ; and initialize data segment register
+ 0005  66| A1 0000 R		mov eax,val1 ; eax = 10000h
+ 0009  66| 03 06 0004 R		add eax,val2 ; eax = 70000h
+ 000E  66| 2B 06 0008 R		sub eax,val3 ; eax = 30000h
+ 0013  66| A3 000C R		mov finalVal,eax ; store the result
+ 0017  E8 0000 E		call DumpRegs ; display registers
+				exit
+ 001E				main ENDP
+				END main
